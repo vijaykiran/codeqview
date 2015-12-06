@@ -183,7 +183,7 @@ add a new repository, it is cloned on the server, the commits are imported into 
      [:span.text-muted "By #_conjurers for "
       [:a {:href "http://clojurecup.com"} "ClojureCup 2015"]
       [:span " _ "]
-      [:a {:href "http://twitter.com/vijaykiran"}  "@vijakiran"]
+      [:a {:href "http://twitter.com/vijaykiran"}  "@vijaykiran"]
       [:span "•"]
       [:a {:href "http://twitter.com/nehaagarwald"}  "@nehaagarwald"]]]]])
 
