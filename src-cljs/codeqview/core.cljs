@@ -175,7 +175,7 @@ add a new repository, it is cloned on the server, the commits are imported into 
        (for [repo (:repos @db)]
          ^{:key (get repo "eid")}
          [:tr
-          [:td [:a {:href (str "/repos/" (get repo "eid"))} (get repo "name")]]
+          [:td [:span {:href (str "/repos/" (get repo "eid"))} (get repo "name")]]
           [:td [:span (get repo "url")]]])]]]]
    [:div.row
     [:div.col-md-6.col-md-offset-3.text-center
