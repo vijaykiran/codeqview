@@ -44,7 +44,13 @@
     (codeq/import-data uri repo-url (get-name repo-url))
     (ok (get-repos))))
 
+(defn process-query [req]
+  (println req)
+  (let [q (get (:params req) :query)]
+    (ok (d/q q (d/db (conn))))))
+
 (defroutes home-routes
   (GET "/" [] (home-page))
   (POST "/repos" [] import-repo)
+  (POST "/query" [] process-query)
   (GET "/repos" [] (ok (get-repos))))

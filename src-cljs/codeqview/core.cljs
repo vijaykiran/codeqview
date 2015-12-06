@@ -9,7 +9,7 @@
   (:import goog.History))
 
 (def db (atom {:repos []
-               :current-repo {}}))
+               :query-results #{}}))
 
 (defn refresh-repos []
   (GET "/repos"
@@ -66,14 +66,27 @@
                              (refresh-repos)
                              (aset js/window "location" "/#"))}))
 
+
+(defn process-query [qs]
+  (.log js/console qs)
+  (let [q (cljs.reader/read-string qs)]
+    (.log js/console q)
+    (POST "/query" {:headers {"Accept" "application/transit+json"
+                              "x-csrf-token" (.-value (.getElementById js/document "token"))}
+                    :params {:query q}
+                    :handler (fn [r]
+                               (swap! db assoc :query-results r)
+                               (.log js/console (str r)))})))
+
+
 (defn add-page []
   (let [val (atom "")]
     (fn []
       [:div.container
        [:div.row
         [:div.col-md-6.col-md-offset-3
-         [:h3 "Add Repository"]
-         [:div.panel.panel-default
+         [:div.panel.panel-info
+          [:div.panel-heading "Add a repository"]
           [:div.panel-body
            "Wait for a few seconds after adding a repository - you will be redirected to home after loading is done."]]
          [:div.input-group.input-group-md
@@ -89,8 +102,29 @@
 (defn about-page []
   [:div.container
    [:div.row
-    [:div.col-md-10.col-offset-1
-     "About CodeqView"]]])
+    [:div.col-md-8.col-md-offset-2
+     [:div.panel.panel-default
+      [:div.panel-heading "What's is this?"]
+      [:div.panel-body
+       [:p "CodeqView is an interface for "
+        [:a {:href "https://github.com/Datomic/codeq" :target "_blank"} "Codeq."]
+        [:p "CodeqView's goal is to provide a snappy UI on top of Codeq so you can navigate different Clojure repositories and query them using datalog. When you
+add a new repository, it is cloned on the server, the commits are imported into Datomic and finally a all the clj files are analyzed to create the Codeqs of the code."]
+        " This application is built using"
+        [:ul
+         [:li "Clojure"]
+         [:li "ClojureScript"]
+         [:li "Datomic/Codq"]
+         [:li "Reagent"]]]]]]]])
+
+(defn query-results [rs]
+  [:div
+   [:table.table.table-condensed
+    [:tbody
+     (for [r rs]
+       [:tr
+        (for [d r]
+          [:td (str d)])])]]])
 
 (defn query-page []
   (let [val (atom "")]
@@ -99,8 +133,11 @@
        [:div.row
         [:div.col-md-10.col-offset-1
          [:h1 "Query!"]
-         [:span.text-muted "Explore codeqs."]
-         [:hr]
+         [:div.panel
+          [:div.panel-body
+           [:a  {:href "https://cloud.github.com/downloads/Datomic/codeq/codeq.pdf" :target "_blank"} "Take a look at Codeq schema"]
+           [:span " and explore using datalog. e.g.:"]
+           [:pre "[:find ?uri :where [_ :repo/uri ?uri]]"]]]
          [:div.input-group.input-group-md
           [:span.input-group-addon "Datalog Query:"]
           [:input.form-control {:type "text"
@@ -109,7 +146,10 @@
                                 :on-change #(reset! val (-> % .-target .-value))}]
           [:span.input-group-btn
            [:button.btn.btn-primary {:type "button"
-                                     :on-click #(.log js/console @val)} "Go!"]]]]]])))
+                                     :on-click #(process-query @val)} "Go!"]]]]]
+       [:hr]
+       [:div.row
+        [query-results (:query-results @db)]]])))
 
 (defn home-page []
   [:div.container
