@@ -378,6 +378,11 @@
                    (line-seq s)))]
     commits))
 
+
+;; <div class="plus-loader">
+;; Loading…
+;; </div>
+
 (defn unimported-commits
   [db git-dir]
   (let [imported (into {}

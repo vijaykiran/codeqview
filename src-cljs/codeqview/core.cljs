@@ -8,8 +8,18 @@
             [ajax.core :refer [GET POST]])
   (:import goog.History))
 
+
+
+
 (def db (atom {:repos []
                :current-repo {}}))
+
+
+(defn refresh-repos []
+  (GET "/repos"
+      {:handler #(swap! db assoc :repos %)}))
+
+;;; --- Components
 
 (defn nav-link [uri title page collapsed?]
   [:li {:class (when (= page (session/get :page)) "active")}
@@ -38,7 +48,14 @@
          (when-not @collapsed? {:class "in"})
          [:ul.nav.navbar-nav
           [nav-link "#/add"   "Add"   :add collapsed?]
-          [nav-link "#/about" "About" :about collapsed?]]]]])))
+          [nav-link "#/query" "Query" :query collapsed?]
+          [nav-link "#/about" "About" :about collapsed?]]
+         [:ul.nav.navbar-nav.navbar-right
+          [:li {:style {:background-color "orange !important"}}
+           [:a {:role "button"
+                :style {:color "#fff !important"
+                        :font-weight "bold"}
+                :href "http://clojurecup.com" :target "_blank"} "Vote for us!"]]]]]])))
 
 (defn repo-page []
   [:div.cotnainer
@@ -50,15 +67,19 @@
                             "x-csrf-token" (.-value (.getElementById js/document "token"))}
                   :params {:url url}
                   :handler (fn [r]
-                             (.log js/console (str r)))}))
+                             (refresh-repos)
+                             (aset js/window "location" "/#"))}))
 
 (defn add-page []
   (let [val (atom "")]
     (fn []
       [:div.container
        [:div.row
-        [:div.col-md-6
+        [:div.col-md-6.col-md-offset-3
          [:h3 "Add Repository"]
+         [:div.panel.panel-default
+          [:div.panel-body
+           "Wait for a few seconds after adding a repository - you will be redirected to home after loading is done."]]
          [:div.input-group.input-group-md
           [:span.input-group-addon "https://github.com/"]
           [:input.form-control {:type "text"
@@ -72,19 +93,27 @@
 (defn about-page []
   [:div.container
    [:div.row
-    [:div.col-md-12
-     "About Page"]]])
+    [:div.col-md-10.col-offset-1
+     "About CodeqView"]]])
+
+(defn query-page []
+  [:div.container
+   [:div.row
+    [:div.col-md-10.col-offset-1
+     "Query !"]]])
 
 (defn home-page []
   [:div.container
    [:div.jumbotron
     [:h1 "Welcome to CodeqView"]
-    [:p "Code Quantum View of your Clojure Repository!"]
-    [:p [:a.btn.btn-primary.btn-lg {:href "#/add"} "Add a repository"]]]
+    [:p
+     [:a {:href "https://github.com/Datomic/codeq"} "Code Quantum "] "View of your Clojure Code!"]
+    [:p
+     [:a.btn.btn-success.btn-lg {:href "#/add"} "Add a repository"]]]
    [:div.row
     [:div.col-md-12
      [:h2 "Explore Code Quantums!"]
-     [:table.table
+     [:table.table.table-condensed
       [:thead
        [:tr
         [:th "Repository Name"]
@@ -94,11 +123,22 @@
          ^{:key (get repo "eid")}
          [:tr
           [:td [:a {:href (str "/repos/" (get repo "eid"))} (get repo "name")]]
-          [:td [:span (get repo "url")]]])]]]]])
+          [:td [:span (get repo "url")]]])]]]]
+   [:div.row
+    [:div.col-md-6.col-md-offset-3.text-center
+     [:hr]
+     [:span.text-muted "By #_conjurers for "
+      [:a {:href "http://clojurecup.com"} "ClojureCup 2015"]
+      [:span " _ "]
+      [:a {:href "http://twitter.com/vijaykiran"}  "@vijakiran"]
+      [:span "•"]
+      [:a {:href "http://twitter.com/nehaagarwald"}  "@nehaagarwald"]
+      ]]]])
 
 (def pages
   {:home  #'home-page
    :about #'about-page
+   :query #'query-page
    :add   #'add-page})
 
 (defn page []
@@ -117,6 +157,13 @@
 (secretary/defroute "/add" []
   (session/put! :page :add))
 
+(secretary/defroute "/query" []
+  (session/put! :page :query))
+
+(secretary/defroute "/repos/:id" []
+  (session/put! :page :repo))
+
+
 ;; -------------------------
 ;; History
 ;; must be called after routes have been defined
@@ -134,11 +181,8 @@
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
 
-(defn get-data []
-  (GET "/repos"
-    {:handler #(swap! db assoc :repos %)}))
 
 (defn init! []
   (hook-browser-navigation!)
   (mount-components)
-  (get-data))
+  (refresh-repos))

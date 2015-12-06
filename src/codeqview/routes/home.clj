@@ -15,7 +15,6 @@
 (defn conn [] (codeq/ensure-db uri))
 
 (defn get-name [url]
-  (println "getting anme of " url)
   (-> url
       (s/replace "https://github.com/" "")
       (s/replace ".git" "")))
@@ -33,7 +32,7 @@
   (let [repo-url (get (:params req) :url)]
     (println repo-url)
     (codeq/import-data uri repo-url (get-name repo-url))
-    (ok "hello")))
+    (ok (get-repos))))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
