@@ -44,16 +44,30 @@
   [:div.cotnainer
    [:span "repo Name"]])
 
+(defn add-repo [url]
+  (.log js/console url)
+  (POST "/repos" {:headers {"Accept" "application/transit+json"
+                            "x-csrf-token" (.-value (.getElementById js/document "token"))}
+                  :params {:url url}
+                  :handler (fn [r]
+                             (.log js/console (str r)))}))
+
 (defn add-page []
-  [:div.container
-   [:div.row
-    [:div.col-md-6
-     [:h3 "Add Repository"]
-     [:div.input-group.input-group-md
-      [:span.input-group-addon "https://github.com/"]
-      [:input.form-control {:type "text" :placeholder "Datomic/codeq.git"}]
-      [:span.input-group-btn
-       [:button.btn.btn-success {:type "button"} "Go!"]]]]]])
+  (let [val (atom "")]
+    (fn []
+      [:div.container
+       [:div.row
+        [:div.col-md-6
+         [:h3 "Add Repository"]
+         [:div.input-group.input-group-md
+          [:span.input-group-addon "https://github.com/"]
+          [:input.form-control {:type "text"
+                                :value @val
+                                :placeholder "Datomic/codeq.git"
+                                :on-change #(reset! val (-> % .-target .-value))}]
+          [:span.input-group-btn
+           [:button.btn.btn-success {:type "button"
+                                     :on-click #(add-repo (str "https://github.com/" @val))} "Go!"]]]]]])))
 
 (defn about-page []
   [:div.container
@@ -64,7 +78,7 @@
 (defn home-page []
   [:div.container
    [:div.jumbotron
-    [:h1 "Welcome to CodeqView" ]
+    [:h1 "Welcome to CodeqView"]
     [:p "Code Quantum View of your Clojure Repository!"]
     [:p [:a.btn.btn-primary.btn-lg {:href "#/add"} "Add a repository"]]]
    [:div.row
@@ -80,7 +94,7 @@
          ^{:key (get repo "eid")}
          [:tr
           [:td [:a {:href (str "/repos/" (get repo "eid"))} (get repo "name")]]
-          [:td [:span  (get repo "url")]]])]]]]])
+          [:td [:span (get repo "url")]]])]]]]])
 
 (def pages
   {:home  #'home-page
@@ -108,11 +122,11 @@
 ;; must be called after routes have been defined
 (defn hook-browser-navigation! []
   (doto (History.)
-        (events/listen
-          EventType/NAVIGATE
-          (fn [event]
-              (secretary/dispatch! (.-token event))))
-        (.setEnabled true)))
+    (events/listen
+     EventType/NAVIGATE
+     (fn [event]
+       (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
 
 ;; -------------------------
 ;; Initialize app
@@ -122,7 +136,7 @@
 
 (defn get-data []
   (GET "/repos"
-      {:handler #(swap! db assoc :repos %)}))
+    {:handler #(swap! db assoc :repos %)}))
 
 (defn init! []
   (hook-browser-navigation!)

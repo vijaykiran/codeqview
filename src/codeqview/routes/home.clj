@@ -1,9 +1,10 @@
 (ns codeqview.routes.home
   (:require [codeqview.layout :as layout]
-            [compojure.core :refer [defroutes GET]]
+            [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :refer [ok]]
             [clojure.java.io :as io]
             [datomic.api :as d]
+            [datomic.codeq.core :as codeq]
             [clojure.string :as s]))
 
 (defn home-page []
@@ -11,19 +12,30 @@
 
 
 (def uri "datomic:free://localhost:4334/codeq")
-(def conn (d/connect uri))
+(defn conn [] (codeq/ensure-db uri))
+
+(defn get-name [url]
+  (println "getting anme of " url)
+  (-> url
+      (s/replace "https://github.com/" "")
+      (s/replace ".git" "")))
 
 (defn get-repos []
   (let [repo-urls (d/q '[:find ?eid ?uri :where [?eid :repo/uri ?uri]]
-                       (d/db conn))]
+                       (d/db (conn)))]
     (mapv (fn [[eid url]]
             {:eid eid
-             :name (-> url
-                       (s/replace "https://github.com/" "")
-                       (s/replace ".git" ""))
+             :name (get-name url)
              :url url})
           repo-urls)))
 
+(defn import-repo [req]
+  (let [repo-url (get (:params req) :url)]
+    (println repo-url)
+    (codeq/import-data uri repo-url (get-name repo-url))
+    (ok "hello")))
+
 (defroutes home-routes
   (GET "/" [] (home-page))
+  (POST "/repos" [] import-repo)
   (GET "/repos" [] (ok (get-repos))))
