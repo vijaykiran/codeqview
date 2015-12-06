@@ -4,6 +4,7 @@
             [secretary.core :as secretary :include-macros true]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
+            [cljs.reader :as reader]
             [markdown.core :refer [md->html]]
             [ajax.core :refer [GET POST]])
   (:import goog.History))
@@ -69,7 +70,7 @@
 
 (defn process-query [qs]
   (.log js/console qs)
-  (let [q (cljs.reader/read-string qs)]
+  (let [q (reader/read-string qs)]
     (.log js/console q)
     (POST "/query" {:headers {"Accept" "application/transit+json"
                               "x-csrf-token" (.-value (.getElementById js/document "token"))}
@@ -119,7 +120,7 @@ add a new repository, it is cloned on the server, the commits are imported into 
 
 (defn query-results [rs]
   [:div
-   [:table.table.table-condensed
+   [:table.table.table-condensed.table-striped
     [:tbody
      (for [r rs]
        [:tr
@@ -136,8 +137,11 @@ add a new repository, it is cloned on the server, the commits are imported into 
          [:div.panel
           [:div.panel-body
            [:a  {:href "https://cloud.github.com/downloads/Datomic/codeq/codeq.pdf" :target "_blank"} "Take a look at Codeq schema"]
-           [:span " and explore using datalog. e.g.:"]
-           [:pre "[:find ?uri :where [_ :repo/uri ?uri]]"]]]
+           [:span " and explore using datalog. e.g.,:"
+            [:ul
+             [:li [:code "[:find ?uri :where [_ :repo/uri ?uri]]"]]
+             [:li  [:code "[:find (pull ?e [*]) :where  [?e :code/name]]"]]
+             [:li  [:code "[:find ?name :where [_ :code/name ?name]]"]]]]]]
          [:div.input-group.input-group-md
           [:span.input-group-addon "Datalog Query:"]
           [:input.form-control {:type "text"
