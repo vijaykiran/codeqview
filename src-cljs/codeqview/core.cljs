@@ -8,6 +8,9 @@
             [ajax.core :refer [GET POST]])
   (:import goog.History))
 
+(def db (atom {:repos []
+               :current-repo {}}))
+
 (defn nav-link [uri title page collapsed?]
   [:li {:class (when (= page (session/get :page)) "active")}
    [:a {:href uri
@@ -37,6 +40,10 @@
           [nav-link "#/add"   "Add"   :add collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
+(defn repo-page []
+  [:div.cotnainer
+   [:span "repo Name"]])
+
 (defn add-page []
   [:div.container
    [:div.row
@@ -44,11 +51,9 @@
      [:h3 "Add Repository"]
      [:div.input-group.input-group-md
       [:span.input-group-addon "https://github.com/"]
-      [:input.form-control {:type "text"}]
+      [:input.form-control {:type "text" :placeholder "Datomic/codeq.git"}]
       [:span.input-group-btn
-       [:button.btn.btn-success {:type "button"} "Go!"]]]
-     ]
-    ]])
+       [:button.btn.btn-success {:type "button"} "Go!"]]]]]])
 
 (defn about-page []
   [:div.container
@@ -59,12 +64,23 @@
 (defn home-page []
   [:div.container
    [:div.jumbotron
-    [:h1 "Welcome to CodeqView"]
+    [:h1 "Welcome to CodeqView" ]
     [:p "Code Quantum View of your Clojure Repository!"]
     [:p [:a.btn.btn-primary.btn-lg {:href "#/add"} "Add a repository"]]]
    [:div.row
     [:div.col-md-12
-     [:h2 "Explore Code Quantums!"]]]])
+     [:h2 "Explore Code Quantums!"]
+     [:table.table
+      [:thead
+       [:tr
+        [:th "Repository Name"]
+        [:th "Github URL"]]]
+      [:tbody
+       (for [repo (:repos @db)]
+         ^{:key (get repo "eid")}
+         [:tr
+          [:td [:a {:href (str "/repos/" (get repo "eid"))} (get repo "name")]]
+          [:td [:span  (get repo "url")]]])]]]]])
 
 (def pages
   {:home  #'home-page
@@ -104,6 +120,11 @@
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
 
+(defn get-data []
+  (GET "/repos"
+      {:handler #(swap! db assoc :repos %)}))
+
 (defn init! []
   (hook-browser-navigation!)
-  (mount-components))
+  (mount-components)
+  (get-data))

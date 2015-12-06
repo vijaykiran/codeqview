@@ -260,8 +260,8 @@
 
 (defn list-dir
   "Returns [[sha :type filename] ...]"
-  [tree]
-  (with-open [s (exec-stream (str "git --git-dir cat-file -p " tree))]
+  [git-dir tree]
+  (with-open [s (exec-stream (str "git --git-dir " git-dir " cat-file -p " tree))]
     (let [es (line-seq s)]
       (mapv #(let [ss (string/split ^String % #"\s")]
                [(nth ss 2)
@@ -298,7 +298,7 @@
      :committed (dt (committer 1))}))
 
 (defn commit-tx-data
-  [db repo repo-name {:keys [sha msg tree parents author authored committer committed] :as commit}]
+  [db git-dir repo repo-name {:keys [sha msg tree parents author authored committer committed] :as commit}]
   (let [tempid? map? ;;todo - better pred
         sha->id (index->id-fn db :git/sha)
         email->id (index->id-fn db :email/address)
@@ -328,7 +328,7 @@
                                newpath (conj [:db/add nodeid :node/paths pathid])
                                (tempid? id) (conj {:db/id id :git/sha sha :git/type type}))
                         data (if (and newpath (= type :tree))
-                               (let [es (list-dir sha)]
+                               (let [es (list-dir git-dir sha)]
                                  (reduce (fn [data child]
                                            (let [[cid cdata] (f (str path "/") child)
                                                  data (into data cdata)]
@@ -396,7 +396,7 @@
     conn))
 
 (defn import-git
-  [conn repo-uri repo-name commits]
+  [conn repo-uri repo-name git-dir commits]
   ;;todo - add already existing commits to new repo if it includes them
   (println "Importing repo:" repo-uri "as:" repo-name)
   (let [db (d/db conn)
@@ -410,7 +410,7 @@
     (doseq [commit commits]
       (let [db (d/db conn)]
         (println "Importing commit:" (:sha commit))
-        (d/transact conn (commit-tx-data db repo repo-name commit))))
+        (d/transact conn (commit-tx-data db git-dir repo repo-name commit))))
     (d/request-index conn)
     (println "Import complete!")))
 
@@ -475,18 +475,12 @@
 (defn import-data [& [db-uri repo-uri repo-name]]
   (if db-uri
     (let [conn (ensure-db db-uri)
-          tmp-repo-folder (fs/temp-dir repo-name)]
+          tmp-repo-folder (fs/temp-dir repo-name)
+          git-dir (str tmp-repo-folder "/.git")]
       (println "cloning into" tmp-repo-folder)
       (clojure.java.shell/sh "git" "clone" repo-uri (str tmp-repo-folder))
-      (import-git conn repo-uri repo-name (unimported-commits (d/db conn) (str tmp-repo-folder "/.git")))
-      (run-analyzers (str tmp-repo-folder "/.git") conn))
+      (import-git conn repo-uri repo-name git-dir (unimported-commits (d/db conn) git-dir))
+      (run-analyzers git-dir conn))
     (println "Usage: datomic.codeq.core db-uri [commit-name]")))
-
-;; (defn -main
-;;   [& args]
-;;   (apply main args)
-;;   (shutdown-agents)
-;;   (System/exit 0))
-
 
 ;;(import-data "datomic:free://localhost:4334/codeq" "https://github.com/Datomic/codeq.git" "codeq")
