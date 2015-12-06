@@ -165,7 +165,7 @@ add a new repository, it is cloned on the server, the commits are imported into 
      [:a.btn.btn-success.btn-lg {:href "#/add"} "Add a repository"]]]
    [:div.row
     [:div.col-md-12
-     [:h2 "Explore Code Quantums!"]
+     [:h4 "Explore Code Quantums from these repos!"]
      [:table.table.table-condensed
       [:thead
        [:tr
