@@ -8,16 +8,12 @@
             [ajax.core :refer [GET POST]])
   (:import goog.History))
 
-
-
-
 (def db (atom {:repos []
                :current-repo {}}))
 
-
 (defn refresh-repos []
   (GET "/repos"
-      {:handler #(swap! db assoc :repos %)}))
+    {:handler #(swap! db assoc :repos %)}))
 
 ;;; --- Components
 
@@ -84,7 +80,7 @@
           [:span.input-group-addon "https://github.com/"]
           [:input.form-control {:type "text"
                                 :value @val
-                                :placeholder "Datomic/codeq.git"
+                                :placeholder "vijaykiran/codeqview.git"
                                 :on-change #(reset! val (-> % .-target .-value))}]
           [:span.input-group-btn
            [:button.btn.btn-success {:type "button"
@@ -97,17 +93,30 @@
      "About CodeqView"]]])
 
 (defn query-page []
-  [:div.container
-   [:div.row
-    [:div.col-md-10.col-offset-1
-     "Query !"]]])
+  (let [val (atom "")]
+    (fn []
+      [:div.container
+       [:div.row
+        [:div.col-md-10.col-offset-1
+         [:h1 "Query!"]
+         [:span.text-muted "Explore codeqs."]
+         [:hr]
+         [:div.input-group.input-group-md
+          [:span.input-group-addon "Datalog Query:"]
+          [:input.form-control {:type "text"
+                                :value @val
+                                :placeholder "[:find ?name :where [_ :code/name ?name]]"
+                                :on-change #(reset! val (-> % .-target .-value))}]
+          [:span.input-group-btn
+           [:button.btn.btn-primary {:type "button"
+                                     :on-click #(.log js/console @val)} "Go!"]]]]]])))
 
 (defn home-page []
   [:div.container
    [:div.jumbotron
     [:h1 "Welcome to CodeqView"]
     [:p
-     [:a {:href "https://github.com/Datomic/codeq"} "Code Quantum "] "View of your Clojure Code!"]
+     [:a {:href "https://github.com/Datomic/codeq" :target "_blank"} "Code Quantums"] " of your Clojure Code!"]
     [:p
      [:a.btn.btn-success.btn-lg {:href "#/add"} "Add a repository"]]]
    [:div.row
@@ -132,8 +141,7 @@
       [:span " _ "]
       [:a {:href "http://twitter.com/vijaykiran"}  "@vijakiran"]
       [:span "•"]
-      [:a {:href "http://twitter.com/nehaagarwald"}  "@nehaagarwald"]
-      ]]]])
+      [:a {:href "http://twitter.com/nehaagarwald"}  "@nehaagarwald"]]]]])
 
 (def pages
   {:home  #'home-page
@@ -163,7 +171,6 @@
 (secretary/defroute "/repos/:id" []
   (session/put! :page :repo))
 
-
 ;; -------------------------
 ;; History
 ;; must be called after routes have been defined
@@ -180,7 +187,6 @@
 (defn mount-components []
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
-
 
 (defn init! []
   (hook-browser-navigation!)

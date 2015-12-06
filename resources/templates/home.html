@@ -1,23 +1,26 @@
 <html>
   <head>
-      <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Welcome to codeqview</title>
-      <link rel="stylesheet" href="http://css-spinners.com/css/spinner/plus.css" type="text/css">
-      <link href='https://fonts.googleapis.com/css?family=Merriweather:400,700,700italic' rel='stylesheet' type='text/css'>
-      <style>
-      body  {
-           font-family: 'Merriweather', serif !important;
-       }
-      </style>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to codeqview</title>
+    <link rel="stylesheet" href="http://css-spinners.com/css/spinner/plus.css" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Merriweather:400,700,700italic' rel='stylesheet' type='text/css'>
+    <style>
+     body  {
+         font-family: 'Merriweather', serif !important;
+     }
+    </style>
   </head>
   <body>
     <div id="navbar"></div>
     <div id="app">
       <div class="container">
-        <div class="three-quarters-loader">Loading…</div>
-        <p>If you're seeing this message, that means you haven't yet compiled your ClojureScript!</p>
-        <p>Please run <code>lein figwheel</code> to start the ClojureScript compiler and reload the page.</p>
+        <div class="col-md-8.col-md-offset-2">
+          <div class="three-quarters-loader">Loading…</div>
+          <h1>CodeqView</h1>
+          <p>Hang In There!!</p>
+          <p> Loading CodeqView for your Enjoyment</p>
+        </div>
       </div>
     </div>
 
@@ -27,7 +30,7 @@
     {% style "/css/screen.css" %}
     <input id="token" type="hidden" value="{{csrf-token}}"></input>
     <script type="text/javascript">
-        var context = "{{servlet-context}}";
+     var context = "{{servlet-context}}";
     </script>
     {% script "/js/app.js" %}
   </body>
