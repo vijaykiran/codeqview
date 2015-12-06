@@ -9,3 +9,5 @@ pom.xml
 profiles.clj
 /.env
 *.log
+/.cljs_rhino_repl
+Procfile
