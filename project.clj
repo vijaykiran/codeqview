@@ -1,11 +1,11 @@
 (defproject codeqview "0.1.0-SNAPSHOT"
 
-  :description "CodeqView : Viewer for Codeqs"
+ :description "CodeqView : Viewer for Codeqs"
   :url "http://vijaykiran.com/projects/codeqview"
 
   :dependencies [[bouncer "0.3.3"]
                  [cljs-ajax "0.5.1"]
-                 [com.datomic/datomic-free "0.9.5344"]
+                 [com.datomic/datomic-pro "0.9.5344"]
                  [com.fzakaria/slf4j-timbre "0.2.1"]
                  [com.taoensso/timbre "4.1.4"]
                  [com.taoensso/tower "3.0.2"]
@@ -30,8 +30,11 @@
                  [ring-webjars "0.1.1"]
                  [ring/ring-defaults "0.1.5"]
                  [secretary "1.2.3"]
-                 [selmer "0.9.5"]]
+                 [selmer "0.9.5"]
+                 [me.raynes/fs "1.4.6"]]
 
+  :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
+                                   :creds :gpg}}
   :min-lein-version "2.0.0"
   :uberjar-name "codeqview.jar"
   :jvm-opts ["-server"]

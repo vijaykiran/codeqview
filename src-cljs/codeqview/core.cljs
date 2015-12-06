@@ -17,7 +17,7 @@
 (defn navbar []
   (let [collapsed? (atom true)]
     (fn []
-      [:nav.navbar.navbar.navbar-fixed-top
+      [:nav.navbar.navbar-default.navbar-fixed-top
        [:div.container
         [:div.navbar-header
          [:button.navbar-toggle
@@ -34,7 +34,6 @@
         [:div.navbar-collapse.collapse
          (when-not @collapsed? {:class "in"})
          [:ul.nav.navbar-nav
-          [nav-link "#/"      "Home"  :home collapsed?]
           [nav-link "#/add"   "Add"   :add collapsed?]
           [nav-link "#/about" "About" :about collapsed?]]]]])))
 
@@ -101,14 +100,10 @@
 
 ;; -------------------------
 ;; Initialize app
-(defn fetch-docs! []
-  (GET (str js/context "/docs") {:handler #(session/put! :docs %)}))
-
 (defn mount-components []
   (reagent/render [#'navbar] (.getElementById js/document "navbar"))
   (reagent/render [#'page] (.getElementById js/document "app")))
 
 (defn init! []
-  (fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))
