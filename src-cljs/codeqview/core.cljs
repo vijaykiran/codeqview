@@ -115,7 +115,7 @@ add a new repository, it is cloned on the server, the commits are imported into 
         [:ul
          [:li "Clojure"]
          [:li "ClojureScript"]
-         [:li "Datomic/Codq"]
+         [:li "Datomic/Codeq"]
          [:li "Reagent"]]]]]]]])
 
 (defn query-results [rs]
