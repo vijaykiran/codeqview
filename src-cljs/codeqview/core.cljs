@@ -140,7 +140,6 @@ add a new repository, it is cloned on the server, the commits are imported into 
            [:span " and explore using datalog. e.g.,:"
             [:ul
              [:li [:code "[:find ?uri :where [_ :repo/uri ?uri]]"]]
-             [:li  [:code "[:find (pull ?e [*]) :where  [?e :code/name]]"]]
              [:li  [:code "[:find ?name :where [_ :code/name ?name]]"]]]]]]
          [:div.input-group.input-group-md
           [:span.input-group-addon "Datalog Query:"]
